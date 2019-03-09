@@ -16,7 +16,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "lint:staged": "lint-staged"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -26,5 +27,12 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "pre-commit": "lint:staged",
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "prettier --write --print-width 120 --tab-width 2 --no-semi --single-quote --trailing-comma all",
+      "git add"
+    ]
+  }
 }
