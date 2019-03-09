@@ -47,7 +47,7 @@ const Timetable = props => {
 
 const App = props => {
   const [labels, setLabels] = useState('')
-  const [periodNum, setperiodNum] = useState(0)
+  const [periodNum, setPeriodNum] = useState(0)
 
   return (
     <>
