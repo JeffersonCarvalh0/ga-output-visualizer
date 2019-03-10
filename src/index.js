@@ -4,31 +4,41 @@ import { render } from 'react-dom'
 import { CardPanel, Input, Table } from 'react-materialize'
 
 const TimetableRow = props => {
-  const cells = props.labels.map(e => <td> {e} </td>)
+  const cells = props.tuples.map(e => (
+    <td> {e.grade === undefined ? e : `subject=${e.subject}, teacher=${e.teacher}`} </td>
+  ))
 
   return <tr>{cells}</tr>
 }
 
 const Timetable = props => {
-  if (props.labels && props.periodNum) {
+  if (props.input && props.periodNum && props.days) {
     const periodNum = parseInt(props.periodNum)
-    const labels = props.labels.split(' ')
-    const days = Math.trunc(labels.length / periodNum)
+    const days = parseInt(props.days)
+    const tuples = props.input.filter(tuple => tuple.grade === props.grade)
     const heads = []
     const rows = []
 
     heads.push(<th />)
     for (let i = 0; i < days; ++i) heads.push(<th> Day {i + 1} </th>)
 
+    const arr = Array(days).fill("Free")
+    console.log(...arr)
     for (let i = 0; i < periodNum; ++i) {
-      const currentRow = [<span> Period {i + 1} </span>]
-      for (let j = i; j < labels.length; j += periodNum) currentRow.push(labels[j])
-      rows.push(<TimetableRow labels={currentRow} />)
+      const currentRow = [<span> <b> Period {i + 1} </b> </span>, ...arr]
+      rows.push(currentRow.slice())
     }
+
+    console.log(rows)
+
+    for (let tuple of tuples)
+      rows[tuple.period % (days + 1)][Math.trunc(tuple.period / (days + 1)) + 1] = tuple
+
+    for (let i = 0; i < rows.length; ++i) rows[i] = <TimetableRow tuples={rows[i]} />
 
     return (
       <div className="section">
-        <h4> Timetable </h4>
+        <h4> Grade { props.grade } </h4>
         <div className="divider" />
         <CardPanel className="z-depth-5">
           <Table centered hoverable>
@@ -46,8 +56,17 @@ const Timetable = props => {
 }
 
 const App = props => {
-  const [labels, setLabels] = useState('')
+  const [input, setInput] = useState({})
   const [periodNum, setPeriodNum] = useState(0)
+  const [classesNum, setClassesNum] = useState(0)
+  const [days, setDays] = useState(0)
+
+  const generateTimetables = () => {
+    const timeTables = [];
+    for (let i = 0; i < classesNum; ++i)
+      timeTables.push(<Timetable input={input} periodNum={periodNum} grade={i} days={days} key={i} />)
+    return timeTables
+  }
 
   return (
     <>
@@ -59,11 +78,13 @@ const App = props => {
 
       <div className="container">
         <div className="section">
-          <Input name="labels" onChange={e => setLabels(e.target.value)} label="Tuple labels" />
+          <Input name="input" onChange={e => setInput(JSON.parse(e.target.value))} label="Input" />
           <Input name="periodNum" type="number" onChange={e => setPeriodNum(e.target.value)} label="Periods per day" />
+          <Input name="classesNum" type="number" onChange={e => setClassesNum(e.target.value)} label="Number of classes" />
+          <Input name="days" type="number" onChange={e => setDays(e.target.value)} label="Number of school days per week" />
         </div>
 
-        <Timetable labels={labels} periodNum={periodNum} />
+        { generateTimetables() }
       </div>
     </>
   )
